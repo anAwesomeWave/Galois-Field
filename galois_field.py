@@ -1,15 +1,5 @@
-import numpy as np
 from tabulate import tabulate
-from sympy import div
 
-
-# print(np.polydiv([1, 0], [1]))
-# print(np.polydiv(np.polymul([1, 0], [1, 0, 0]), [1, 0, 1, 1]))
-
-
-# пример поля галуа
-# GF(2^3) f(x) = x^3 + x + 1
-# умножаем x * x^2 = x^3 == -x - 1 = x + 1
 
 class GF:
     def __init__(self, p=2, n=3, poly=None):
@@ -25,21 +15,6 @@ class GF:
 
     def poly_mod(self, poly):
         return [c % self.p for c in poly]
-
-    def poly_generator(self):
-        """ Генерирует все многочлены поля галуа"""
-
-        ans = []
-
-        def rec_gen(cur_pos, cur_poly):
-            if cur_pos == self.n:
-                ans.append(cur_poly)
-                return
-            for i in range(self.p):
-                rec_gen(cur_pos + 1, cur_poly + [i])
-
-        rec_gen(0, [])
-        return ans
 
     def poly_generator3(self):
         numbers_in_base = []
@@ -124,6 +99,7 @@ class GF:
     def poly_sub(self, a, b):
         inv_b = [-x for x in b]
         return self.poly_sum(a, inv_b)
+
     def generate_possible_irreducible(self):
         """ Генерирует все возможные полиномы степени self.n"""
 

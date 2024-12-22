@@ -29,7 +29,6 @@ class Affine:
         ans = []
         for char in text:
             ans.append(self.gf.int_to_poly(ord(char)))
-            print(ord(char), ans[-1])
         return ans
 
     def galois_to_ascii(self, galois_text):
