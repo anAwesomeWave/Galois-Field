@@ -15,7 +15,7 @@ class GF:
     def __init__(self, p=2, n=3, poly=None):
         self.p = p
         self.n = n
-        self.all_elems = self.poly_generator2()  # сразу сгенерируем все элементы поля
+        self.all_elems = self.poly_generator3()  # сразу сгенерируем все элементы поля
         if poly is None:
             poly = self.generate_irreducible()
         self.f = poly  # неприводимый
@@ -41,23 +41,22 @@ class GF:
         rec_gen(0, [])
         return ans
 
-    def poly_generator2(self):
-        """ Генерирует все многочлены поля галуа. Без нулевого префикса"""
+    def poly_generator3(self):
+        numbers_in_base = []
 
-        ans = []
+        for num in range(self.p**self.n + 1):
+            digits = []
+            n = num
+            while n > 0:
+                digits.insert(0, n % self.p)
+                n //= self.p
 
-        def rec_gen(cur_pos, cur_poly):
-            if cur_pos == self.n:
-                return
-            if len(cur_poly) > 0 and cur_poly[0] == 0:
-                return
-            for i in range(int(cur_poly == 0), self.p):
-                ans.append(cur_poly + [i])
-            for i in range(self.p):
-                rec_gen(cur_pos + 1, cur_poly + [i])
+            if num == 0:
+                digits = [0]
 
-        rec_gen(0, [])
-        return ans
+            numbers_in_base.append(digits)
+
+        return numbers_in_base
 
     def poly_div(self, dividend, divisor):
         """
@@ -121,6 +120,7 @@ class GF:
         while len(result) > 1 and result[0] == 0:
             result.pop(0)
         return result
+
     def generate_possible_irreducible(self):
         """ Генерирует все возможные полиномы степени self.n"""
 
@@ -158,6 +158,14 @@ class GF:
     def int_to_poly(self, i):
         return self.all_elems[i % self.p ** self.n]
 
+    def poly_to_int(self, poly):
+        ans = 0
+        cur_p = 1
+        for i in range(len(poly) - 1, -1, -1):
+            ans += poly[i] * cur_p
+            cur_p *= self.p
+        return ans
+
     def find_inv_perebor(self, poly):
         for elem in self.all_elems:
             if self.poly_mult(poly, elem) == [1]:
@@ -168,24 +176,23 @@ class GF:
         def visualize_poly(poly):
             if len(poly) == 1 and poly[0] == 0:
                 return "0"
-            return " ".join(
+            return "".join(
                 [
-                    f"+ {x}*x^{len(poly) - ind - 1}" if x != 0 and x != 1 else "" if x == 0 else f"+ x^{len(poly) - ind - 1}"
+                    f" + {x}*x^{len(poly) - ind - 1}" if x != 0 and x != 1 else "" if x == 0 else f" + x^{len(poly) - ind - 1}"
                     for ind, x in enumerate(poly)]
             ).strip(" + ")
 
-        powers = [f"a^{i}" for i in range(self.n ** self.p)]
+        powers = [f"a^{i}" for i in range(self.p ** self.n)]
 
         elements = tabulate(zip(powers, [visualize_poly(i) for i in self.all_elems]), headers=['Element', 'Polynom'],
                             tablefmt='orgtbl')
-
         return elements + f"\n f(x) = {self.f}"
 
 
 if __name__ == "__main__":
     gf = GF(2, 3)
 
-    print(gf.is_irreducible())
-    print(gf.generate_irreducible())
-    print(gf.f)
+    # print(gf.is_irreducible())
+    # print(gf.generate_irreducible())
+    # print(gf.f)
     print(gf)
