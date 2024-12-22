@@ -2,6 +2,7 @@ import numpy as np
 from tabulate import tabulate
 from sympy import div
 
+
 # print(np.polydiv([1, 0], [1]))
 # print(np.polydiv(np.polymul([1, 0], [1, 0, 0]), [1, 0, 1, 1]))
 
@@ -20,6 +21,7 @@ class GF:
         self.f = poly  # неприводимый
         if not self.is_irreducible(self.f):
             raise ValueError(f"Polynom {self.f} not irreducible in GF(p={self.p}, n={self.n})")
+        print("GF: f(x) =", self.f)
 
     def poly_mod(self, poly):
         return [c % self.p for c in poly]
@@ -78,17 +80,9 @@ class GF:
             term = [term_coeff * coeff % self.p for coeff in divisor] + [0] * (len(remainder) - len(divisor))
             remainder = [(rem - term[i]) % self.p for i, rem in enumerate(remainder)]
 
-            # print("REM AND DIV2", remainder, divisor, quotient)
-            # если занулились больше 1 коеф. то мы должны добавить нули в ответ
-            # например [1, 1, 0, 2], [2], GF(3)
-            # без добавления будет [2, 2, 1, 0] - неверно
+            # убрать 1 зануленный коеф.
             if remainder and remainder[0] == 0:
                 remainder.pop(0)
-                # while remainder and remainder[0] == 0:
-                #     quotient.append(0)
-                #     remainder.pop(0)
-
-            # print("REM AND DIV3", remainder, divisor, quotient)
 
         # Если остаток пуст, заменяем его на [0]
         if not remainder:
@@ -99,7 +93,6 @@ class GF:
         # Дополняем частное нулями до корректной длины
         quotient = quotient + [0] * (len(dividend) - len(quotient) - len(divisor) + 1)
 
-        # print("REM AND DIV4", remainder, divisor, quotient)
         return quotient, remainder
 
     def poly_mult(self, a, b):
@@ -109,14 +102,25 @@ class GF:
             for j, c2 in enumerate(b):
                 result[i + j] += c1 * c2
                 result[i + j] %= self.p  # Операция по модулю p
-        # TODO: проверить
-        # print(result)
-        # while len(result) > 1 and result[0] == 0:
-        #     result.pop(0)
-        print("START")
-        print(result, self.f)
         return self.poly_div(result, self.f)[1]  # берем остаток (то есть приводим по модулю с помощью неприводимого)
 
+    def poly_sum(self, a, b):
+        """Пусть len(a) - всегда <= len(b)"""
+        if len(a) > len(b):
+            a, b = b, a
+        pos_a = len(a) - 1
+        pos_b = len(b) - 1
+        result = [0] * len(b)
+        while pos_a > -1:
+            result[pos_b] += (a[pos_a] + b[pos_b]) % self.p
+            pos_a -= 1
+            pos_b -= 1
+        while pos_b > -1:
+            result[pos_b] += b[pos_b] % self.p
+            pos_b -= 1
+        while len(result) > 1 and result[0] == 0:
+            result.pop(0)
+        return result
     def generate_possible_irreducible(self):
         """ Генерирует все возможные полиномы степени self.n"""
 
@@ -147,8 +151,6 @@ class GF:
 
         # на скалярные не делим!
         for elem in self.all_elems[self.p:]:
-            # print(poly, elem)
-            # print(self.poly_div(poly, elem))
             if all(int(x) == 0 for x in self.poly_div(poly, elem)[1]):
                 return False
         return True
@@ -158,8 +160,9 @@ class GF:
 
     def find_inv_perebor(self, poly):
         for elem in self.all_elems:
-            print(poly, elem)
-            print(po)
+            if self.poly_mult(poly, elem) == [1]:
+                return elem
+        raise ValueError(f"CANNOT FIND inv. Probably bad elem (0?) {poly}")
 
     def __str__(self):
         def visualize_poly(poly):
@@ -179,9 +182,10 @@ class GF:
         return elements + f"\n f(x) = {self.f}"
 
 
-gf = GF(2, 3)
+if __name__ == "__main__":
+    gf = GF(2, 3)
 
-# print(gf.is_irreducible())
-# print(gf.generate_irreducible())
-# print(gf.f)
-# print(gf)
+    print(gf.is_irreducible())
+    print(gf.generate_irreducible())
+    print(gf.f)
+    print(gf)
