@@ -44,7 +44,7 @@ class GF:
     def poly_generator3(self):
         numbers_in_base = []
 
-        for num in range(self.p**self.n + 1):
+        for num in range(self.p ** self.n + 1):
             digits = []
             n = num
             while n > 0:
@@ -121,6 +121,9 @@ class GF:
             result.pop(0)
         return result
 
+    def poly_sub(self, a, b):
+        inv_b = [-x for x in b]
+        return self.poly_sum(a, inv_b)
     def generate_possible_irreducible(self):
         """ Генерирует все возможные полиномы степени self.n"""
 

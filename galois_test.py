@@ -27,3 +27,11 @@ def test_sum():
     assert GF(2, 3).poly_sum([1, 0], [1, 0, 0]) == [1, 1, 0]
     assert GF(2, 3).poly_sum([1, 0, 0], [1, 0, 0]) == [0]
     assert GF(3, 3).poly_sum([1, 1, 1], [1, 2, 1]) == [2, 0, 2]
+
+
+def test_sub():
+    assert GF(2, 3).poly_sub([0], [1, 1, 1, 1, 1, 0, 0]) == [1, 1, 1, 1, 1, 0, 0]
+    assert GF(2, 3).poly_sub([1, 1, 1, 1, 1, 0, 0], [0]) == [1, 1, 1, 1, 1, 0, 0]
+    assert GF(2, 3).poly_sub([1, 0], [1, 0, 0]) == [1, 1, 0]
+    assert GF(2, 3).poly_sub([1, 0, 0], [1, 0, 0]) == [0]
+    assert GF(3, 3).poly_sub([1, 1, 1], [1, 2, 1]) == [2, 0]

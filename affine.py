@@ -40,10 +40,18 @@ class Affine:
         return "".join(ans)
 
     def encrypt(self, plaintext):
-        pass
+        plain_poly = self.ascii_to_galois(plaintext)
+        ans = []
+        for poly in plain_poly:
+            ans.append(self.gf.poly_sum(self.gf.poly_mult(self.a, poly), self.b))
+        return self.galois_to_ascii(ans)
 
     def decrypt(self, ciphertext):
-        pass
+        cipher_poly = self.ascii_to_galois(ciphertext)
+        ans = []
+        for poly in cipher_poly:
+            ans.append(self.gf.poly_mult(self.gf.poly_sub(poly, self.b), self.inv_a))
+        return self.galois_to_ascii(ans)
 
 
 # a = Affine(3, 1, GF(2, 3))
@@ -54,6 +62,7 @@ class Affine:
 # print(gf.poly_mult([1, 1, 0, 2], [2]))
 
 if __name__ == '__main__':
-    aff = Affine(3, 1, GF(2, 8))
+    aff = Affine(3, 2, GF(3, 5))
     print(aff.galois_to_ascii(aff.ascii_to_galois("hello world")))
+    print(aff.decrypt(aff.encrypt("hello world")))
     # print(aff.gf)
