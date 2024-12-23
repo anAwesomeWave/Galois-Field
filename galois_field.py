@@ -5,21 +5,21 @@ class GF:
     def __init__(self, p=2, n=3, poly=None):
         self.p = p
         self.n = n
-        self.all_elems = self.poly_generator3()  # сразу сгенерируем все элементы поля
+        self.all_elems = self.poly_generator()  # сразу сгенерируем все элементы поля
         if poly is None:
             poly = self.generate_irreducible()
         self.f = poly  # неприводимый
         if not self.is_irreducible(self.f):
             raise ValueError(f"Polynom {self.f} not irreducible in GF(p={self.p}, n={self.n})")
-        print("GF: f(x) =", self.f)
+        # print("GF: f(x) =", self.f)
 
     def poly_mod(self, poly):
         return [c % self.p for c in poly]
 
-    def poly_generator3(self):
+    def poly_generator(self):
         numbers_in_base = []
 
-        for num in range(self.p ** self.n + 1):
+        for num in range(self.p ** self.n):
             digits = []
             n = num
             while n > 0:
@@ -30,7 +30,6 @@ class GF:
                 digits = [0]
 
             numbers_in_base.append(digits)
-
         return numbers_in_base
 
     def poly_div(self, dividend, divisor):
@@ -42,13 +41,11 @@ class GF:
         remainder = dividend[:]
 
         while len(remainder) >= len(divisor):
-            # print("REM AND DIV", remainder, divisor, quotient)
             lead_coeff_rem = remainder[0]
             lead_coeff_div = divisor[0]
 
             term_coeff = (lead_coeff_rem * pow(lead_coeff_div, -1, self.p)) % self.p
 
-            # print("COEFFF", term_coeff)
             quotient.append(term_coeff)
 
             term = [term_coeff * coeff % self.p for coeff in divisor] + [0] * (len(remainder) - len(divisor))
@@ -169,9 +166,10 @@ class GF:
 
 
 if __name__ == "__main__":
-    gf = GF(2, 3)
+    gf = GF(3, 3)
 
     # print(gf.is_irreducible())
     # print(gf.generate_irreducible())
     # print(gf.f)
     print(gf)
+    print(gf.all_elems)
