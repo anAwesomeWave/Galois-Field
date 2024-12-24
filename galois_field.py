@@ -127,7 +127,8 @@ class GF:
 
         # на скалярные не делим!
         for elem in self.all_elems[self.p:]:
-            if all(int(x) == 0 for x in self.poly_div(poly, elem)[1]):
+            rem = self.poly_div(poly, elem)[1]
+            if len(rem) == 1 and rem[0] == 0:
                 return False
         return True
 
@@ -166,10 +167,8 @@ class GF:
 
 
 if __name__ == "__main__":
-    gf = GF(3, 3)
+    gf = GF(3, 2, [2, 1, 1])
+    print(gf.poly_div([1, 0, 0], [2, 1, 1]))
 
-    # print(gf.is_irreducible())
-    # print(gf.generate_irreducible())
-    # print(gf.f)
-    print(gf)
-    print(gf.all_elems)
+    # print(gf)
+    # print(gf.all_elems)
