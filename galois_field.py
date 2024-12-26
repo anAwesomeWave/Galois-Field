@@ -2,13 +2,13 @@ from tabulate import tabulate
 
 
 class GF:
-    def __init__(self, p=2, n=3, poly=None):
+    def __init__(self, p=2, n=3, f=None):
         self.p = p
         self.n = n
         self.all_elems = self.poly_generator()  # сразу сгенерируем все элементы поля
-        if poly is None:
-            poly = self.generate_irreducible()
-        self.f = poly  # неприводимый
+        if f is None:
+            f = self.generate_irreducible()
+        self.f = f  # неприводимый
         if not self.is_irreducible(self.f):
             raise ValueError(f"Polynom {self.f} not irreducible in GF(p={self.p}, n={self.n})")
         # print("GF: f(x) =", self.f)
