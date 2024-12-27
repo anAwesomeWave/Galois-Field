@@ -10,8 +10,9 @@ class GF:
             f = self.generate_irreducible()
         self.f = f  # неприводимый
         if not self.is_irreducible(self.f):
-            raise ValueError(f"Polynom {self.f} not irreducible in GF(p={self.p}, n={self.n})")
+            raise ValueError(f"Polynomial {self.f} not irreducible in GF(p={self.p}, n={self.n})")
         # print("GF: f(x) =", self.f)
+        self.primitive = self.find_primitive()
 
     def poly_mod(self, poly):
         return [c % self.p for c in poly]
@@ -149,6 +150,35 @@ class GF:
                 return elem
         raise ValueError(f"CANNOT FIND inv. Probably bad elem (0?) {poly}")
 
+    def find_primitive(self):
+        for elem in self.all_elems[1::]:
+            if self.is_primitive(elem):
+                return elem
+
+    def is_primitive(self, elem):
+        power = self.p ** self.n - 1  # столько элементов в мультипликативнйо группе
+        cur_elem = elem
+        # print(cur_elem)
+        for i in range(power - 1):  # сдвиг, так как начинаем с нуля, а внутри цикла уже 2 степень
+            if cur_elem == [1]:  # в меньший степенях не должен давать 1
+                return False
+            cur_elem = self.poly_mult(cur_elem, elem)
+            # print(cur_elem)
+        return cur_elem == [1]
+
+    def generate_primitive_powers(self):
+        # на выходе словарь, элемент - степень
+        powers_dict = dict()
+        power = self.p ** self.n - 1  # столько элементов в мультипликативнйо группе
+        cur_elem = self.primitive
+        for i in range(power - 1):  # сдвиг, так как начинаем с нуля, а внутри цикла уже 2 степень
+            if cur_elem == [1]:  # в меньший степенях не должен давать 1
+                return False
+            powers_dict[tuple(cur_elem)] = i + 1
+            cur_elem = self.poly_mult(cur_elem, self.primitive)
+        powers_dict[tuple(cur_elem)] = power
+        return powers_dict
+
     def __str__(self):
         def visualize_poly(poly):
             if len(poly) == 1 and poly[0] == 0:
@@ -158,17 +188,23 @@ class GF:
                     f" + {x}*x^{len(poly) - ind - 1}" if x != 0 and x != 1 else "" if x == 0 else f" + x^{len(poly) - ind - 1}"
                     for ind, x in enumerate(poly)]
             ).strip(" + ")
+        powers_dict = self.generate_primitive_powers()
+        powers = [f"a^{powers_dict[tuple(i)]}" if tuple(i) in powers_dict else " - " for i in self.all_elems]
 
-        powers = [f"a^{i}" for i in range(self.p ** self.n)]
-
-        elements = tabulate(zip(powers, [visualize_poly(i) for i in self.all_elems]), headers=['Element', 'Polynom'],
+        elements = tabulate(zip(powers, [visualize_poly(i) for i in self.all_elems]), headers=['Element', 'Polynomial'],
                             tablefmt='orgtbl')
         return elements + f"\n f(x) = {self.f}"
 
 
 if __name__ == "__main__":
-    gf = GF(3, 2, [2, 1, 1])
-    print(gf.poly_div([1, 0, 0], [2, 1, 1]))
+    # gf = GF(3, 2, [2, 1, 1])
+    # print(gf.poly_div([1, 0, 0], [2, 1, 1]))
 
+    print('-----')
+    # gf = GF(2, 3, [1, 1, 0, 1])
+    # print(gf.poly_mult([1, 1, 0], [1, 1]))
     # print(gf)
     # print(gf.all_elems)
+    # print(GF(5, 2))
+    gf = GF(5, 2)
+    print(gf)
