@@ -1,3 +1,6 @@
+from math import isqrt, sqrt
+
+
 class EllipticCurve:
     def __init__(self, a, b, p):
         """
@@ -27,6 +30,9 @@ class EllipticCurve:
                 d[p] = []
             d[p].append(i)
         return d
+
+    def inverse_point(self, point):
+        return point[0], self.p - point[1]
 
     def is_point_on_curve(self, x, y):
         """
@@ -71,7 +77,8 @@ class EllipticCurve:
     def scalar_multiply(self, k, p):
         """Compute k * P using the double-and-add method."""
         result = p
-
+        if k == 0:
+            return "O"
         if k == 1:
             return p
         if k & 1:  # odd. minus 1
@@ -108,9 +115,14 @@ class EllipticCurve:
                     points.append((x, y))
         return points
 
-    def bsgs(self):
+    def bsgs(self, point):
         """ baby-step-giant-step """
-        pass
+        q = self.scalar_multiply(p + 1, point)
+
+        m = isqrt(isqrt(self.p)) + 1
+        j_points = [self.scalar_multiply(i, point) for i in range(m + 1)]
+        print(q, m, j_points)
+        ## TODO: set of j_points + negative points
 
 
 if __name__ == "__main__":
@@ -129,3 +141,6 @@ if __name__ == "__main__":
     print(curve.generate_points_sq())
     print(curve.scalar_multiply(5, (0, 4)))
     print(curve.point_addition((0, 4), (3, 3)))
+    print(curve.bsgs((1, 2)))
+    print(curve.inverse_point((1, 2)))
+    print(curve.point_addition((1, 2), (1, 3)))
