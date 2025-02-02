@@ -1,14 +1,9 @@
+import random
 from math import isqrt, sqrt
 
 
 class EllipticCurve:
     def __init__(self, a, b, p):
-        """
-        Создает эллиптическую кривую вида y^2 = x^3 + ax + b над полем Fp.
-        :param a: Коэффициент a
-        :param b: Коэффициент b
-        :param p: Простое число, определяющее поле Fp
-        """
         if (4 * a ** 3 + 27 * b ** 2) % p == 0:
             raise ValueError("Кривая вырождена! Коэффициенты a и b не удовлетворяют условию 4a^3 + 27b^2 != 0 (mod p).")
         self.a = a
@@ -35,22 +30,10 @@ class EllipticCurve:
         return point[0], self.p - point[1]
 
     def is_point_on_curve(self, x, y):
-        """
-        Проверяет, принадлежит ли точка (x, y) кривой.
-        :param x: Координата x
-        :param y: Координата y
-        :return: True, если точка принадлежит кривой, иначе False
-        """
         # print(x, y, (y * y) % p, (x ** 3 + self.a * x + self.b) % self.p)
         return (y * y) % p == (x ** 3 + self.a * x + self.b) % self.p
 
     def point_addition(self, P, Q):
-        """
-        Складывает две точки на эллиптической кривой.
-        :param P: Точка P (x1, y1) или O (бесконечность)
-        :param Q: Точка Q (x2, y2) или O (бесконечность)
-        :return: Результат сложения P + Q
-        """
         if P == "O":
             return Q
         if Q == "O":
@@ -115,14 +98,33 @@ class EllipticCurve:
                     points.append((x, y))
         return points
 
-    def bsgs(self, point):
-        """ baby-step-giant-step """
-        q = self.scalar_multiply(p + 1, point)
 
-        m = isqrt(isqrt(self.p)) + 1
-        j_points = [self.scalar_multiply(i, point) for i in range(m + 1)]
-        print(q, m, j_points)
-        ## TODO: set of j_points + negative points
+def exp_by_modulo(a, k, p):
+    b = 1
+    if k > 0:
+        A = a
+        if k & 1:
+            b = a
+        while k > 0:
+            A = (A * A) % p
+            k //= 2
+            if k % 2 == 1:
+                b = (b * A) % p
+    return b
+
+
+def is_prime_fermat(n, it=10):
+    if n == 2:
+        return True
+    if n <= 4 or n % 2 == 0:
+        return False
+
+    for i in range(it):
+        a = random.randint(2, n - 1)
+        r = exp_by_modulo(a, n - 1, n)
+        if r != 1:
+            return False
+    return True
 
 
 if __name__ == "__main__":
@@ -141,6 +143,12 @@ if __name__ == "__main__":
     print(curve.generate_points_sq())
     print(curve.scalar_multiply(5, (0, 4)))
     print(curve.point_addition((0, 4), (3, 3)))
-    print(curve.bsgs((1, 2)))
+    # print(curve.bsgs((1, 2)))
     print(curve.inverse_point((1, 2)))
     print(curve.point_addition((1, 2), (1, 3)))
+
+    print("--------------")
+    print(exp_by_modulo(3, 12, 10))
+    for i in range(5, 15):
+        for j in range(3, 6):
+            print(f"n = {i}, mod = {j}, is_prime = {is_prime_fermat(i, j)}")
