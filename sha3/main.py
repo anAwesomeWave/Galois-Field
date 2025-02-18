@@ -31,7 +31,7 @@ class SHA3:
         # 1 << (k-1), т.к. 1 уже занимает 1 позицию,
         # padding = 1 << (k-1)
         # padding.extend(0b1)
-        pad_len = len(message_bits) % self.r + self.r
+        pad_len = (-len(message_bits) - 2) % self.r + 2
         # if pad_len == 0:
         #     pad_len = self.r
         padding_bits = bitarray.bitarray('1' + '0' * (pad_len - 2) + '1')
