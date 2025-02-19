@@ -6,8 +6,10 @@ b – размер состояния (обычно 1600 бит).
 r – скорость (rate).
 c – емкость (capacity), при этом r + c = b.
 
-# 1. дополнение
+# 1. дополнение дл длины r
 
+sha-3 (r + c = 1600 = b )
+sha3-256 (r = 1088, c=512
 
 '''
 
@@ -23,6 +25,7 @@ class SHA3:
     #     return
 
     def padding(self, message_bits: bitarray.bitarray) -> bitarray.bitarray:
+        # шаг 1
         # pad10*1, 1 + 0*r + 1
         # добавим 1 000000 (r) 1 бит
         # len(bytes) % r = k
@@ -36,6 +39,17 @@ class SHA3:
         #     pad_len = self.r
         padding_bits = bitarray.bitarray('1' + '0' * (pad_len - 2) + '1')
         return message_bits + padding_bits
+
+    def split_message(self, message_bits: bitarray.bitarray) -> list[bitarray.bitarray]:
+        # шаг 2
+        # n * r = len(message_bits), n - кол-во частей
+        # n * r = len(^) = r * k, так как после дополнения длина кратна r
+        # берем по r бит каждый раз.
+
+        parts = []
+        for i in range(0, len(message_bits), self.r):
+            parts.append(message_bits[i:i + self.r])
+        return parts
 
 
 if __name__ == '__main__':
