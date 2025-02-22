@@ -163,9 +163,7 @@ class SHA3:
                 z2 = (z - (t + 1) * (t + 2) // 2) % self.w
                 state2[self.w * (5 * y + x) + z] = state[self.w * (5 * y + x) + z2]
 
-                x_prev = x
-                x = y
-                y = (2 * x_prev + 3 * y) % 5
+            x, y = y, (2 * x + 3 * y) % 5
         return state2
 
     def pi(self, state: ba) -> ba:
@@ -232,6 +230,7 @@ class SHA3:
 if __name__ == '__main__':
     msg = ba()
     msg.frombytes(b"hello world")
+    print(msg)
     msg.extend("01")
     s = SHA3()
     ans = s.sponge(msg)
