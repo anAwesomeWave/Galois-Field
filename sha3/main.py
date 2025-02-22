@@ -228,12 +228,13 @@ class SHA3:
 
 
 if __name__ == '__main__':
-    msg = ba()
-    msg.frombytes(b"hello world")
-    print(msg)
-    msg.extend("01")
-    s = SHA3()
-    ans = s.sponge(msg)
-    byte_array = ans.tobytes()
-    hex_string = byte_array.hex()
-    print(hex_string)
+    with open("input.txt", 'rb') as f:
+        data = ba()
+        data.frombytes(f.read())
+        data.extend("01")
+        sha = SHA3()
+        hash = sha.sponge(data)
+        print(hash)
+        byte_array = hash.tobytes()
+        hex_string = byte_array.hex()
+        print(hex_string)
