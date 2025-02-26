@@ -227,14 +227,38 @@ class SHA3:
         return state2
 
 
-if __name__ == '__main__':
-    with open("input.txt", 'rb') as f:
+def calc_hash(filepath):
+    with open(filepath, 'r') as f:
         data = ba()
-        data.frombytes(f.read())
+        data.frombytes(bytes(f.read(), 'utf-8'))
         data.extend("01")
         sha = SHA3()
         hash = sha.sponge(data)
-        print(hash)
+        # print(hash)
         byte_array = hash.tobytes()
         hex_string = byte_array.hex()
         print(hex_string)
+        return hex_string
+
+
+def write_hash(filepath):
+    f2 = open("out.txt", "w")
+    f2.write(calc_hash(filepath))
+
+
+def integrity(filepath):
+    print(calc_hash(filepath))
+    print(open("out.txt").read())
+    return calc_hash(filepath) == open("out.txt").read()
+
+
+if __name__ == '__main__':
+    option = int(input("What you want to do? (1 - calculate hash, 2 - check the integrity)"))
+    filepath = input('Enter the file:')
+    if option == 1:
+        write_hash(filepath)
+    else:
+        if integrity(filepath):
+            print("the file passed integrity check")
+        else:
+            print("file corrupted")
