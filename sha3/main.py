@@ -1,3 +1,5 @@
+import math
+
 from bitarray import bitarray as ba
 
 '''
@@ -6,18 +8,8 @@ b – размер состояния (обычно 1600 бит). для sha3
 r – скорость (rate).
 c – емкость (capacity), при этом r + c = b.
 
-# 1. дополнение дл длины r
-
 sha-3 (r + c = 1600 = b )
 sha3-256 (r = 1088, c=512
-
-Для того чтобы в вашей реализации использовалась, скажем, функция f-800, необходимо выбрать такие r и c, чтобы выполнялось равенство r+c=800.
-Кроме того, изменяя значения r и c, вы тем самым изменяете количество раундов вашей хеш-функции. Т.к. количество оных вычисляется по формуле n=12+2l, где 2l=(b/25). Так для b=1600, Количество раундов равно 24.
-Однако хотя пользователь в праве выбирать для своей реализации любую из предложенных авторами функций, следует отметить что в качестве стандарта SHA-3 принята только функция Keccak-1600 и авторы всячески рекомендуют 
-пользоваться только ею. 
-Так в качестве основных значений для хешей разной длины авторы выбрали следующие параметры:
-https://habr.com/ru/articles/159073/
-
 
 KECCAK-p[1600, 24] =KECCAK-f[1600]. (nr = 12 + 2l = 24)
 
@@ -25,18 +17,13 @@ KECCAK-p[1600, 24] =KECCAK-f[1600]. (nr = 12 + 2l = 24)
 
 
 class SHA3:
-    def __init__(self, b=1600, r=1088, c=512, nr=24):
+    def __init__(self, b=1600, r=1088):
         self.b = b  # size of state
         self.r = r
-        # self.c = c
         self.w = self.b // 25  # size of state row (if we imagine state as a matrix 5x5xw)
-        self.nr = nr  # kecaak number of rounds
         self.d = 256  # sha3-256 - 256 извлекаем из функции sponge
-        self.l = 6  # log2(b/25) = log2(w)
-
-    # def to_bits(self, message: str) -> bits.Bits:
-    #     bits_arr = bits.string_to_bits(message)
-    #     return
+        self.l = int(math.log(1600/25, 2))  # log2(b/25) = log2(w)
+        self.nr = 12 + 2 * self.l  # kecaak number of rounds
 
     def padding(self, message_len: int) -> ba:
         # шаг 1
@@ -51,7 +38,7 @@ class SHA3:
         pad_len = (-message_len - 2) % self.r
         # if pad_len == 0:
         #     pad_len = self.r
-        padding_bits = ba('1' + '0' * pad_len + '1')
+        padding_bits = ba('1' + '0' * pad_len + '1', endian='little')
         return padding_bits
 
     def split_message(self, message_bits: ba) -> list[ba]:
@@ -83,7 +70,7 @@ class SHA3:
             parts.append(P[i:i + self.r])
 
         # 5
-        state = ba('0' * self.b)
+        state = ba('0' * self.b, endian='little')
 
         # 6
         for i in range(n):
@@ -91,7 +78,7 @@ class SHA3:
             state = self.kecaak(state ^ parts[i])
 
         # 7
-        z = ba()
+        z = ba(endian='little')
         # 8
         while True:
             z.extend(state[:self.r])
@@ -134,7 +121,7 @@ class SHA3:
             for j in range(self.w):  # z
                 # state[x,y,z] = state[w(5y+x)+z]
                 D[i][j] = C[(i - 1) % 5][j] ^ C[(i + 1) % 5][(j - 1) % self.w]
-        state2 = ba('0' * self.b)
+        state2 = ba('0' * self.b, endian='little')
         for i in range(5):  # x
             for j in range(5):  # y
                 for k in range(self.w):  # z
@@ -151,7 +138,7 @@ class SHA3:
             return State2
         """
         # 1
-        state2 = ba('0' * self.b)
+        state2 = ba('0' * self.b, endian='little')
         for k in range(self.w):
             state2[k] = state[k]
 
@@ -171,7 +158,7 @@ class SHA3:
             1. all x,y,z state2[x, y, z] = state[(x + 3y) % 5, x, z]
             2. return state2
         """
-        state2 = ba('0' * self.b)
+        state2 = ba('0' * self.b, endian='little')
         for x in range(5):
             for y in range(5):
                 for z in range(self.w):
@@ -184,7 +171,7 @@ class SHA3:
         1.  for all x, y, z: state2[x, y, z] = state[x, y, z] ^ ((state[(x + 1) % 5, y , z] ^ 1) & state[(x+2) % 5, y, z])
         2. return state2
         """
-        state2 = ba('0' * self.b)
+        state2 = ba('0' * self.b, endian='little')
         for x in range(5):
             for y in range(5):
                 for z in range(self.w):
@@ -218,7 +205,7 @@ class SHA3:
         state2 = state.copy()
 
         # 2
-        rc = ba('0' * self.w)
+        rc = ba('0' * self.w, endian='little')
         for j in range(self.l + 1):
             rc[2 ** j - 1] = self.rc_f(j + 7 * ir)
 
@@ -229,7 +216,8 @@ class SHA3:
 
 def calc_hash(filepath):
     with open(filepath, 'r') as f:
-        data = ba()
+        data = ba(endian='little')
+        print(data.endian())
         data.frombytes(bytes(f.read(), 'utf-8'))
         data.extend("01")
         sha = SHA3()
