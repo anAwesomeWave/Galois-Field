@@ -156,14 +156,14 @@ class RSA:
 
         byte_data = arr.tobytes()
 
-        text = byte_data.decode('utf-8')
-        text = text.lstrip('\x00') # удаляю нулевый байты из текста
+        text = byte_data.decode('utf-8', errors='replace')
+        text = text.lstrip('\x00')  # удаляю нулевый байты из текста
         return text
 
 
 rsa = RSA(keys=(13, 21583, 1637))
 enc = rsa.encrypt("CRYPTO")
 print(enc)
-# print(rsa.bitarray_to_text(enc))
+print(rsa.bitarray_to_text(enc))
 dec = rsa.decrypt(enc)
 print(rsa.bitarray_to_text(dec))
