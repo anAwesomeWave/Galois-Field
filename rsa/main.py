@@ -101,6 +101,7 @@ class RSA:
         encr_block = ba('0' * (encr_block_size - len(encr_block))) + encr_block
         # print(encr_block, len(encr_block))
         return encr_block
+
     def encrypt(self, message):
         l, n = self.open_keys
         block_size = math.floor(math.log2(n))
@@ -125,13 +126,44 @@ class RSA:
             encrypted.extend(i)
         return encrypted
 
-    def decrypt(self, ciphertext):
+    def _decrypt_block(self, d, n, block, decr_block_size):
+        # возвращает зашифрованный блок длины n + 1
+        int_val = ba2int(block)
+        # print(int_val)
+        encr_val = exp_by_modulo(int_val, d, n)
+        # print(encr_val)
+        encr_block = int2ba(encr_val)
+        encr_block = ba('0' * (decr_block_size - len(encr_block))) + encr_block
+        # print(encr_block, len(encr_block))
+        return encr_block
+
+    def decrypt(self, bin_mes):
         n, d = self.closed_keys
-        decrypted = ''.join(chr(exp_by_modulo(char, d, n)) for char in ciphertext)
+        block_size = math.floor(math.log2(n)) + 1
+        decrypted_blocks = [
+            self._encrypt_block(d, n, bin_mes[i:i + block_size], block_size - 1) for i in
+            range(0, len(bin_mes), block_size)
+        ]
+        print(decrypted_blocks)
+        decrypted = ba()
+        for i in decrypted_blocks:
+            decrypted.extend(i)
         return decrypted
+
+    def bitarray_to_text(self, arr):
+        if len(arr) % 8 != 0:
+            arr.fill()
+
+        byte_data = arr.tobytes()
+
+        text = byte_data.decode('utf-8')
+        text = text.lstrip('\x00') # удаляю нулевый байты из текста
+        return text
 
 
 rsa = RSA(keys=(13, 21583, 1637))
 enc = rsa.encrypt("CRYPTO")
 print(enc)
-# print(rsa.decrypt(enc))
+# print(rsa.bitarray_to_text(enc))
+dec = rsa.decrypt(enc)
+print(rsa.bitarray_to_text(dec))
