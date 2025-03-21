@@ -206,5 +206,5 @@ if __name__ == "__main__":
     # print(gf)
     # print(gf.all_elems)
     # print(GF(5, 2))
-    gf = GF(5, 2)
+    gf = GF(2, 1)
     print(gf)

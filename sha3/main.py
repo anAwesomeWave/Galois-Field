@@ -217,7 +217,6 @@ class SHA3:
 def calc_hash(filepath):
     with open(filepath, 'r') as f:
         data = ba(endian='little')
-        print(data.endian())
         data.frombytes(bytes(f.read(), 'utf-8'))
         data.extend("01")
         sha = SHA3()

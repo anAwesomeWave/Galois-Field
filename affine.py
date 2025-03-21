@@ -62,10 +62,11 @@ class Affine:
 
 if __name__ == '__main__':
     aff = Affine(3, 2, GF(3, 5))
+    print(aff.a, aff.b)
     print(aff.galois_to_ascii(aff.ascii_to_galois("hello world")))
     print(aff.decrypt(aff.encrypt("hello world")))
 
-    cipher = aff.encrypt("my secret message")
+    cipher = aff.encrypt("my new secret message.123213.!")
     print(cipher)
     print(aff.decrypt(cipher))
     # print(aff.gf)

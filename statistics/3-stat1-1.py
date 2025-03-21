@@ -40,7 +40,7 @@ fig, axs = plt.subplots(1, 3, figsize=(18, 5))
 axs[0].axvline((5 - Sigma / np.sqrt(20)), color='k', linestyle='dashed', linewidth=1)
 axs[0].axvline((5 + Sigma / np.sqrt(20)), color='k', linestyle='dashed', linewidth=1)
 axs[0].hist(means_arr, bins=30, density=True, alpha=0.6, color='skyblue', label='Эмпирическая')
-# axs[0].plot(x_mean, norm.pdf(x_mean, loc=mu, scale=sigma/np.sqrt(n)), 'r-', lw=2, label='Теоретическая')
+axs[0].plot(x_mean, norm.pdf(x_mean, loc=mu, scale=sigma/np.sqrt(n)), 'r-', lw=2, label='Теоретическая')
 axs[0].set_title('Выборочное среднее')
 axs[0].legend()
 

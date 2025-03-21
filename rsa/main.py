@@ -1,3 +1,4 @@
+import copy
 import math
 import random
 from bitarray import bitarray as ba
@@ -91,15 +92,16 @@ class RSA:
         b.frombytes(message.encode('utf-8'))
         return b
 
-    def _encrypt_block(self, l, n, block, encr_block_size):
-        # возвращает зашифрованный блок длины n + 1
+    def _encrypt_block(self, l, n, block, encr_block_size, operation):
         int_val = ba2int(block)
-        # print(int_val)
+        print(operation, "block:", int_val, block, end="\t")
         encr_val = exp_by_modulo(int_val, l, n)
         # print(encr_val)
         encr_block = int2ba(encr_val)
+        # print("added len = ", encr_block_size, len(encr_block), encr_block)
         encr_block = ba('0' * (encr_block_size - len(encr_block))) + encr_block
         # print(encr_block, len(encr_block))
+        print(f"encr_block={encr_block}, val={ba2int(encr_block)}")
         return encr_block
 
     def encrypt(self, message):
@@ -107,41 +109,32 @@ class RSA:
         block_size = math.floor(math.log2(n))
         # строку в битовую
         bin_mes = self.get_bin_string(message)
-        print(bin_mes, len(bin_mes) % block_size)
+        print(f"Encryption: block_size={block_size}, message={message}")
         # добить строку до кратности нулями слева
         extra_block_size = len(bin_mes) % block_size
         added_len = block_size - extra_block_size
         if added_len != block_size:  # бессмысленно добавлять целый блок из нулей
             bin_mes = ba('0' * added_len) + bin_mes
-        print(bin_mes, len(bin_mes) % block_size)
+        # print(len(bin_mes), bin_mes, len(bin_mes) % block_size)
 
         # так как дополнили слева. идем слева направо последовательно
         encrypted_blocks = [
-            self._encrypt_block(l, n, bin_mes[i:i + block_size], block_size + 1) for i in
+            self._encrypt_block(l, n, bin_mes[i:i + block_size], block_size + 1, "encrypt") for i in
             range(0, len(bin_mes), block_size)
         ]
-        print(encrypted_blocks)
+        # print(encrypted_blocks)
         encrypted = ba()
         for i in encrypted_blocks:
             encrypted.extend(i)
         return encrypted
 
-    def _decrypt_block(self, d, n, block, decr_block_size):
-        # возвращает зашифрованный блок длины n + 1
-        int_val = ba2int(block)
-        # print(int_val)
-        encr_val = exp_by_modulo(int_val, d, n)
-        # print(encr_val)
-        encr_block = int2ba(encr_val)
-        encr_block = ba('0' * (decr_block_size - len(encr_block))) + encr_block
-        # print(encr_block, len(encr_block))
-        return encr_block
-
     def decrypt(self, bin_mes):
         n, d = self.closed_keys
         block_size = math.floor(math.log2(n)) + 1
+        print(f"Decryption: block_size={block_size}, message={bin_mes}")
+        # print("decr", len(bin_mes), block_size, bin_mes)
         decrypted_blocks = [
-            self._encrypt_block(d, n, bin_mes[i:i + block_size], block_size - 1) for i in
+            self._encrypt_block(d, n, bin_mes[i:i + block_size], block_size - 1, "decrypt") for i in
             range(0, len(bin_mes), block_size)
         ]
         print(decrypted_blocks)
@@ -151,6 +144,7 @@ class RSA:
         return decrypted
 
     def bitarray_to_text(self, arr):
+        arr = copy.deepcopy(arr)
         if len(arr) % 8 != 0:
             arr.fill()
 
@@ -158,12 +152,24 @@ class RSA:
 
         text = byte_data.decode('utf-8', errors='replace')
         text = text.lstrip('\x00')  # удаляю нулевый байты из текста
+        text = text.rstrip('\x00')
         return text
 
 
-rsa = RSA(keys=(13, 21583, 1637))
-enc = rsa.encrypt("CRYPTO")
-print(enc)
-print(rsa.bitarray_to_text(enc))
-dec = rsa.decrypt(enc)
-print(rsa.bitarray_to_text(dec))
+if __name__ == '__main__':
+    # ex 1
+    # rsa = RSA(keys=(13, 21583, 1637))
+    # enc = rsa.encrypt("CRYPTO")
+    # print(enc)
+    # print(rsa.bitarray_to_text(enc))
+    # dec = rsa.decrypt(enc)
+    # print(rsa.bitarray_to_text(dec))
+    # ex 2
+    rsa2 = RSA(keys=(13, 323, 133))
+    message = "HASH"
+    enc2 = rsa2.encrypt(message)
+    print(enc2)
+    print(rsa2.bitarray_to_text(enc2))
+    dec2 = rsa2.decrypt(enc2)
+    print(dec2)
+    print(rsa2.bitarray_to_text(dec2))
